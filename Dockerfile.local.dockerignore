@@ -1,0 +1,12 @@
+.git
+.nx
+**/.next/cache
+**/.next/standalone
+**/*.tsbuildinfo
+.env
+.env.*
+**/.env
+**/.env.*
+**/*.key
+**/tests
+artifacts

@@ -1,0 +1,40 @@
+name: mpfrontend-tiffin-reference
+services:
+  customer:
+    image: mpfrontend-tiffin-reference:local
+    build:
+      context: .
+    command: ["pnpm", "start:customer"]
+    environment:
+      BACKEND_ORIGIN: http://host.docker.internal:6300
+      ENABLE_API_DOCS: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "4411:4411"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4411').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+  admin:
+    image: mpfrontend-tiffin-reference:local
+    build:
+      context: .
+    command: ["pnpm", "start:admin"]
+    environment:
+      BACKEND_ORIGIN: http://host.docker.internal:6300
+      ENABLE_API_DOCS: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "4412:4412"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4412').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s

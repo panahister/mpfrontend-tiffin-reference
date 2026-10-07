@@ -1,0 +1,51 @@
+name: Bug report
+description: Report a reproducible defect in the Tiffin reference
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include credentials, session cookies, private design files, or personal data.
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include operating system, Node.js, pnpm, Docker, and relevant backend commit.
+    validations:
+      required: true
+  - type: textarea
+    id: role
+    attributes:
+      label: Surface and demo role
+      description: Customer or Operations, locale, city, and expected role. Do not paste tokens.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and redacted logs
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: I searched existing issues.
+          required: true
+        - label: This report contains no secrets or private design material.
+          required: true
+        - label: This is not a security vulnerability.
+          required: true

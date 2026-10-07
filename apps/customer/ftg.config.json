@@ -1,0 +1,38 @@
+{
+  "openapi": "../../contracts/openapi/presentation/tiffin/openapi.json",
+  "output": "src/features/catalog/model/generated",
+  "requests": [{"name":"place-order","operationId":"PlaceOrder"},{"name":"notification-read","operationId":"MarkNotificationRead","body":"none"},{"name":"cancel-order","operationId":"CancelOrder","body":"optional-json"}],
+  "resources": [
+    {"name":"place-order","operationId":"PlaceOrder","responseStatus":"202"},
+    {"name":"notification-read","operationId":"MarkNotificationRead","responseStatus":"200"},
+    {"name":"cancel-order","operationId":"CancelOrder","responseStatus":"200"},
+    {"name":"menu","operationId":"GetMenu"},
+    {"name":"tracking","operationId":"GetTracking"},
+    {"name":"get-media","operationId":"GetMedia","responseStatus":"200"},
+    {
+      "name": "catalog",
+      "operationId": "ListRestaurants",
+      "responsePath": [
+        "items"
+      ]
+    },
+    {
+      "name": "orders",
+      "operationId": "ListMyOrders",
+      "responsePath": [
+        "items"
+      ]
+    },
+    {
+      "name": "order",
+      "operationId": "GetOrder"
+    },
+    {
+      "name": "notifications",
+      "operationId": "ListMyNotifications",
+      "responsePath": [
+        "items"
+      ]
+    }
+  ]
+}

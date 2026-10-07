@@ -1,0 +1,25 @@
+{
+  "name": "@mpfrontend-tiffin/dls-adapter",
+  "version": "0.1.0-dev.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./src/styles.css"
+  },
+  "files": [
+    "dist",
+    "src/styles.css",
+    "assets"
+  ],
+  "dependencies": {
+    "@mpfrontend/ui": "file:../../artifacts/packages/mpfrontend-ui-0.1.0-dev.4.tgz"
+  },
+  "peerDependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  }
+}

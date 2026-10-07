@@ -1,0 +1,1507 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "tiffin customer presentation contracts",
+    "version": "1.6.0"
+  },
+  "paths": {
+    "/api/catalog": {
+      "get": {
+        "operationId": "ListRestaurants",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Restaurant page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestaurantPage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/business/orders": {
+      "get": {
+        "operationId": "ListMyOrders",
+        "summary": "Authenticated customer read; backend enforces approved roles, ownership and city/tenant scope",
+        "x-required-roles": [
+          "customer"
+        ],
+        "x-upstream": {
+          "source": "ordering",
+          "path": "/v1/orders",
+          "operationId": "ListMyOrders"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versioned numeric JSON read profile (no coercion)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "items",
+                    "number",
+                    "size",
+                    "total",
+                    "hasMore",
+                    "pageCount"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "orderId",
+                          "orderNumber",
+                          "restaurantName",
+                          "status",
+                          "total",
+                          "currency",
+                          "placedOnUtc"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "orderId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "orderNumber": {
+                            "type": "string"
+                          },
+                          "restaurantName": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "total": {
+                            "type": "number",
+                            "format": "double"
+                          },
+                          "currency": {
+                            "type": "string"
+                          },
+                          "placedOnUtc": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "number": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "size": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "total": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "pageCount": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "hasMore": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found within the permitted scope"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "PlaceOrder",
+        "summary": "Explicit customer mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "closed-declared-fields-v1",
+        "x-response-profile": "json-v1",
+        "x-upstream": {
+          "source": "ordering",
+          "path": "/v1/orders",
+          "operationId": "PlaceOrder"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "restaurantId",
+                  "lines",
+                  "deliverTo",
+                  "paymentToken",
+                  "expectedTotal"
+                ],
+                "type": "object",
+                "properties": {
+                  "restaurantId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "lines": {
+                    "type": "array",
+                    "items": {
+                      "required": [
+                        "code",
+                        "quantity"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "format": "int32"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "deliverTo": {
+                    "required": [
+                      "recipient",
+                      "phone",
+                      "district",
+                      "line"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "recipient": {
+                        "type": "string"
+                      },
+                      "phone": {
+                        "type": "string"
+                      },
+                      "district": {
+                        "type": "string"
+                      },
+                      "line": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "paymentToken": {
+                    "type": "string"
+                  },
+                  "expectedTotal": {
+                    "type": "number",
+                    "format": "double"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Upstream declared success; consumer numeric JSON response profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "orderId",
+                    "orderNumber",
+                    "total",
+                    "currency",
+                    "placedOnUtc"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "orderNumber": {
+                      "type": "string"
+                    },
+                    "total": {
+                      "type": "number",
+                      "format": "double"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "placedOnUtc": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/orders/{orderId}": {
+      "get": {
+        "operationId": "GetOrder",
+        "summary": "Authenticated customer read; backend enforces approved roles, ownership and city/tenant scope",
+        "x-required-roles": [
+          "customer"
+        ],
+        "x-upstream": {
+          "source": "ordering",
+          "path": "/v1/orders/{orderId}",
+          "operationId": "GetOrder"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versioned numeric JSON read profile (no coercion)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "orderId",
+                    "orderNumber",
+                    "city",
+                    "status",
+                    "restaurantId",
+                    "restaurantName",
+                    "lines",
+                    "total",
+                    "currency",
+                    "district",
+                    "cancellationReason",
+                    "courierName",
+                    "readyInMinutes",
+                    "refunded",
+                    "placedOnUtc",
+                    "history"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "orderNumber": {
+                      "type": "string"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "restaurantId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "restaurantName": {
+                      "type": "string"
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "code",
+                          "name",
+                          "unitPrice",
+                          "quantity",
+                          "lineTotal"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "unitPrice": {
+                            "type": "number",
+                            "format": "double"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "format": "int32"
+                          },
+                          "lineTotal": {
+                            "type": "number",
+                            "format": "double"
+                          }
+                        }
+                      }
+                    },
+                    "total": {
+                      "type": "number",
+                      "format": "double"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "district": {
+                      "type": "string"
+                    },
+                    "cancellationReason": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "courierName": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "readyInMinutes": {
+                      "type": [
+                        "null",
+                        "integer"
+                      ],
+                      "format": "int32"
+                    },
+                    "refunded": {
+                      "type": "boolean"
+                    },
+                    "placedOnUtc": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "history": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "status",
+                          "occurredOnUtc",
+                          "note"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          },
+                          "occurredOnUtc": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "note": {
+                            "type": [
+                              "null",
+                              "string"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found within the permitted scope"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/notifications/": {
+      "get": {
+        "operationId": "ListMyNotifications",
+        "summary": "Authenticated customer read; backend enforces approved roles, ownership and city/tenant scope",
+        "x-required-roles": [
+          "customer"
+        ],
+        "x-upstream": {
+          "source": "notifications",
+          "path": "/v1/notifications",
+          "operationId": "ListMyNotifications"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "unread",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versioned numeric JSON read profile (no coercion)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "items",
+                    "number",
+                    "size",
+                    "total",
+                    "hasMore",
+                    "pageCount"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "notificationId",
+                          "orderId",
+                          "messageKey",
+                          "arguments",
+                          "occurredOnUtc",
+                          "readOnUtc"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "notificationId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "orderId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "messageKey": {
+                            "type": "string"
+                          },
+                          "arguments": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "string"
+                            }
+                          },
+                          "occurredOnUtc": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "readOnUtc": {
+                            "type": [
+                              "null",
+                              "string"
+                            ],
+                            "format": "date-time"
+                          },
+                          "text": {
+                            "type": [
+                              "null",
+                              "string"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "number": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "size": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "total": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "pageCount": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "hasMore": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found within the permitted scope"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/tracking/deliveries/{orderId}": {
+      "get": {
+        "operationId": "GetTracking",
+        "summary": "Authenticated customer read; backend enforces approved roles, ownership and city/tenant scope",
+        "x-required-roles": [
+          "customer",
+          "courier"
+        ],
+        "x-upstream": {
+          "source": "tracking",
+          "path": "/v1/tracking/deliveries/{orderId}",
+          "operationId": "GetTracking"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "points",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versioned numeric JSON read profile (no coercion)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "orderId",
+                    "orderNumber",
+                    "status",
+                    "lastSeen",
+                    "positionCount",
+                    "beganOnUtc",
+                    "arrivedOnUtc",
+                    "trail"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "orderNumber": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "lastSeen": {
+                      "required": [
+                        "latitude",
+                        "longitude",
+                        "recordedOnUtc"
+                      ],
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "latitude": {
+                          "type": "number",
+                          "format": "double"
+                        },
+                        "longitude": {
+                          "type": "number",
+                          "format": "double"
+                        },
+                        "recordedOnUtc": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "positionCount": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "beganOnUtc": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "arrivedOnUtc": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "date-time"
+                    },
+                    "trail": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "latitude",
+                          "longitude",
+                          "recordedOnUtc"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "latitude": {
+                            "type": "number",
+                            "format": "double"
+                          },
+                          "longitude": {
+                            "type": "number",
+                            "format": "double"
+                          },
+                          "recordedOnUtc": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found within the permitted scope"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/menu/{id}": {
+      "get": {
+        "operationId": "GetMenu",
+        "summary": "Public restaurant menu advertisement; never a permission to modify it",
+        "x-upstream": {
+          "source": "restaurants",
+          "path": "/v1/restaurants/{restaurantId}/menu",
+          "operationId": "GetMenu"
+        },
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versioned numeric JSON read profile (no coercion)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "restaurantId",
+                    "name",
+                    "city",
+                    "currency",
+                    "isOpen",
+                    "pictureId",
+                    "items"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "restaurantId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "isOpen": {
+                      "type": "boolean"
+                    },
+                    "pictureId": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "uuid"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "code",
+                          "name",
+                          "price",
+                          "isAvailable",
+                          "pictureId"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "price": {
+                            "type": "number",
+                            "format": "double"
+                          },
+                          "isAvailable": {
+                            "type": "boolean"
+                          },
+                          "pictureId": {
+                            "type": [
+                              "null",
+                              "string"
+                            ],
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found within the permitted scope"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/notifications/{notificationId}/read": {
+      "post": {
+        "operationId": "MarkNotificationRead",
+        "summary": "Explicit customer mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "bodyless-v1",
+        "x-response-profile": "json-v1",
+        "x-upstream": {
+          "source": "notifications",
+          "path": "/v1/notifications/{notificationId}/read",
+          "operationId": "MarkNotificationRead"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "notificationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upstream declared success; consumer numeric JSON response profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "notificationId",
+                    "orderId",
+                    "messageKey",
+                    "arguments",
+                    "occurredOnUtc",
+                    "readOnUtc"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "notificationId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "orderId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "messageKey": {
+                      "type": "string"
+                    },
+                    "arguments": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "occurredOnUtc": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "readOnUtc": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "date-time"
+                    },
+                    "text": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/orders/{orderId}/cancel": {
+      "post": {
+        "operationId": "CancelOrder",
+        "summary": "Explicit customer mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "optional-json-v1",
+        "x-response-profile": "json-v1",
+        "x-upstream": {
+          "source": "ordering",
+          "path": "/v1/orders/{orderId}/cancel",
+          "operationId": "CancelOrder"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "note"
+                ],
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "properties": {
+                  "note": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upstream declared success; consumer numeric JSON response profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "orderId",
+                    "orderNumber",
+                    "city",
+                    "status",
+                    "restaurantId",
+                    "restaurantName",
+                    "lines",
+                    "total",
+                    "currency",
+                    "district",
+                    "cancellationReason",
+                    "courierName",
+                    "readyInMinutes",
+                    "refunded",
+                    "placedOnUtc",
+                    "history"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "orderNumber": {
+                      "type": "string"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "restaurantId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "restaurantName": {
+                      "type": "string"
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "code",
+                          "name",
+                          "unitPrice",
+                          "quantity",
+                          "lineTotal"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "unitPrice": {
+                            "type": "number",
+                            "format": "double"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "format": "int32"
+                          },
+                          "lineTotal": {
+                            "type": "number",
+                            "format": "double"
+                          }
+                        }
+                      }
+                    },
+                    "total": {
+                      "type": "number",
+                      "format": "double"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "district": {
+                      "type": "string"
+                    },
+                    "cancellationReason": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "courierName": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "readyInMinutes": {
+                      "type": [
+                        "null",
+                        "integer"
+                      ],
+                      "format": "int32"
+                    },
+                    "refunded": {
+                      "type": "boolean"
+                    },
+                    "placedOnUtc": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "history": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "status",
+                          "occurredOnUtc",
+                          "note"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          },
+                          "occurredOnUtc": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "note": {
+                            "type": [
+                              "null",
+                              "string"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/media/{mediaId}": {
+      "get": {
+        "operationId": "GetMedia",
+        "summary": "Authenticated customer read; backend enforces approved roles, ownership and city/tenant scope",
+        "x-required-roles": [
+          "customer"
+        ],
+        "x-upstream": {
+          "source": "media",
+          "path": "/v1/media/{mediaId}",
+          "operationId": "GetMedia"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versioned numeric JSON read profile (no coercion)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "mediaId",
+                    "city",
+                    "purpose",
+                    "fileName",
+                    "contentType",
+                    "size",
+                    "state",
+                    "reservedOnUtc",
+                    "availableOnUtc",
+                    "downloadUrl",
+                    "downloadUrlExpiresOnUtc"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "mediaId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "purpose": {
+                      "type": "string"
+                    },
+                    "fileName": {
+                      "type": "string"
+                    },
+                    "contentType": {
+                      "type": "string"
+                    },
+                    "size": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "state": {
+                      "type": "string"
+                    },
+                    "reservedOnUtc": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "availableOnUtc": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "date-time"
+                    },
+                    "downloadUrl": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "uri"
+                    },
+                    "downloadUrlExpiresOnUtc": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found within the permitted scope"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Restaurant": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "restaurantId",
+          "name",
+          "city",
+          "currency",
+          "isOpen"
+        ],
+        "properties": {
+          "restaurantId": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "city": {
+            "type": "string",
+            "readOnly": true
+          },
+          "currency": {
+            "type": "string",
+            "readOnly": true
+          },
+          "isOpen": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "pictureId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "readOnly": true
+          }
+        }
+      },
+      "RestaurantPage": {
+        "type": "object",
+        "required": [
+          "items",
+          "number",
+          "size",
+          "total",
+          "pageCount",
+          "hasMore"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Restaurant"
+            }
+          },
+          "number": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "pageCount": {
+            "type": "integer"
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bffSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "tiffin_customer_session",
+        "description": "HttpOnly customer BFF session. Do not supply backend bearer tokens in the browser."
+      }
+    }
+  },
+  "x-read-projection": {
+    "version": 1,
+    "upstreamRevision": "2026-10-07-openapi-metadata-r4",
+    "sha256": {
+      "ordering": "8d5a175a773ae6d24104e2de667077886a078dbba432b05adb3775218774f00d",
+      "notifications": "38d63ac3cb9254455313a386cbdfbf4c1900b903718e6e10660c3ab75f345be8",
+      "restaurants": "e8bddd9c416b9b22b13230f4654fe044bc1a131856245e3f6a33694df215f1c9",
+      "tracking": "3e43866055d8d092078c817d27f394e639d98d3ee83bd333a15b58d3c1f2a459",
+      "access": "bc675dc165c890fa2425e7134c74332544f6f5982f507a99b77f7032c8f26390",
+      "kitchen": "ba4003e08b41c48529efd4fe154e6546f8fdb77d1e834fa1ec1395fa31f4c23d",
+      "media": "1008b9bd1dd720d07c7ddc668bf250818410f5bdb494b02516d54303b6fccda3"
+    },
+    "numericProfile": "JSON numbers only; never coerce numeric strings",
+    "computedPageFields": "hasMore/pageCount required by the consumer"
+  },
+  "x-request-projection": {
+    "version": 1,
+    "upstreamRevision": "2026-10-07-openapi-metadata-r4",
+    "sha256": {
+      "ordering": "8d5a175a773ae6d24104e2de667077886a078dbba432b05adb3775218774f00d",
+      "notifications": "38d63ac3cb9254455313a386cbdfbf4c1900b903718e6e10660c3ab75f345be8",
+      "restaurants": "e8bddd9c416b9b22b13230f4654fe044bc1a131856245e3f6a33694df215f1c9",
+      "tracking": "3e43866055d8d092078c817d27f394e639d98d3ee83bd333a15b58d3c1f2a459",
+      "access": "bc675dc165c890fa2425e7134c74332544f6f5982f507a99b77f7032c8f26390",
+      "kitchen": "ba4003e08b41c48529efd4fe154e6546f8fdb77d1e834fa1ec1395fa31f4c23d",
+      "media": "1008b9bd1dd720d07c7ddc668bf250818410f5bdb494b02516d54303b6fccda3"
+    },
+    "profiles": [
+      "closed-declared-fields-v1",
+      "bodyless-v1",
+      "optional-json-v1"
+    ],
+    "restriction": "Consumer-only JSON inputs preserve required, absent and optional-null body semantics; object fields are closed and upstream remains unchanged"
+  },
+  "x-response-projection": {
+    "version": 1,
+    "upstreamRevision": "2026-10-07-openapi-metadata-r4",
+    "sha256": {
+      "ordering": "8d5a175a773ae6d24104e2de667077886a078dbba432b05adb3775218774f00d",
+      "notifications": "38d63ac3cb9254455313a386cbdfbf4c1900b903718e6e10660c3ab75f345be8",
+      "restaurants": "e8bddd9c416b9b22b13230f4654fe044bc1a131856245e3f6a33694df215f1c9",
+      "tracking": "3e43866055d8d092078c817d27f394e639d98d3ee83bd333a15b58d3c1f2a459",
+      "access": "bc675dc165c890fa2425e7134c74332544f6f5982f507a99b77f7032c8f26390",
+      "kitchen": "ba4003e08b41c48529efd4fe154e6546f8fdb77d1e834fa1ec1395fa31f4c23d",
+      "media": "1008b9bd1dd720d07c7ddc668bf250818410f5bdb494b02516d54303b6fccda3"
+    },
+    "profiles": [
+      "json-v1",
+      "empty-v1"
+    ],
+    "restriction": "Empty success responses are explicit and never represented as null or an empty JSON object"
+  }
+}

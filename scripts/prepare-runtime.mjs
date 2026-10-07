@@ -1,0 +1,10 @@
+import {copyFile,mkdir} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+import {resolve} from 'node:path';
+const app=process.argv[2];
+if(!['customer','admin'].includes(app))throw new Error('INVALID_APP_KIND');
+const root=fileURLToPath(new URL('../apps/'+app+'/',import.meta.url)),require=createRequire(resolve(root,'package.json'));
+const directory=resolve(root,'runtime-assets/swagger');await mkdir(directory,{recursive:true});
+for(const file of ['swagger-ui.css','swagger-ui-bundle.js','swagger-ui-standalone-preset.js'])await copyFile(require.resolve('swagger-ui-dist/'+file),resolve(directory,file));
+console.log('Prepared pinned Swagger runtime assets for '+app);

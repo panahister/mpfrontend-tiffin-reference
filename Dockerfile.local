@@ -1,0 +1,14 @@
+FROM node:24.19.0-bookworm-slim
+ENV NEXT_TELEMETRY_DISABLED=1
+WORKDIR /workspace
+COPY node_modules ./node_modules
+COPY apps ./apps
+COPY packages ./packages
+COPY themes ./themes
+COPY contracts ./contracts
+COPY bff ./bff
+COPY presentation ./presentation
+COPY package.json ./package.json
+USER node
+WORKDIR /workspace/apps/customer
+CMD ["node","node_modules/next/dist/bin/next","start",".","-H","0.0.0.0","-p","4411"]

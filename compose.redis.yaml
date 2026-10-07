@@ -1,0 +1,49 @@
+# Combine with compose.local.yaml. Validation only: NOT a production HA topology.
+x-shared-env: &shared-env
+  SESSION_PROFILE: redis-validation
+  SESSION_REDIS_URL: redis://session-redis:6379
+  SESSION_NAMESPACE: local-reference
+  SESSION_KEY_FILE: /run/session-key/primary.key
+x-shared: &shared
+  volumes: ["session-key:/run/session-key:ro"]
+  networks: [default, auth-state]
+  depends_on:
+    session-redis: {condition: service_healthy}
+    session-key-init: {condition: service_completed_successfully}
+services:
+  session-key-init:
+    image: mpfrontend-tiffin-reference:local
+    user: "0:0"
+    network_mode: none
+    command: ["node", "/workspace/bff/init-validation-key.mjs"]
+    environment: {SESSION_PROFILE: redis-validation}
+    volumes: ["session-key:/run/session-key"]
+    restart: "no"
+  session-redis:
+    image: redis:8.0-alpine
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "always", "--maxmemory", "128mb", "--maxmemory-policy", "noeviction"]
+    networks: [auth-state]
+    volumes: ["session-state:/data"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+  customer:
+    <<: *shared
+    environment: *shared-env
+  admin:
+    <<: *shared
+    environment: *shared-env
+  customer-bff:
+    <<: *shared
+    environment: *shared-env
+  admin-bff:
+    <<: *shared
+    environment: *shared-env
+networks:
+  auth-state: {internal: true}
+volumes:
+  session-key:
+  session-state:

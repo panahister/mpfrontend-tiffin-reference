@@ -1,0 +1,99 @@
+{
+  "name": "tiffin-customer",
+  "projectType": "application",
+  "tags": [
+    "scope:tiffin",
+    "runtime:mixed",
+    "type:app"
+  ],
+  "implicitDependencies": [
+    "tiffin-dls-adapter"
+  ],
+  "targets": {
+    "test": {
+      "executor":"nx:run-commands",
+      "dependsOn":["ftg-generate"],
+      "options":{"command":"node --import tsx --test apps/customer/tests/*.test.ts"}
+    },
+    "ftg-generate": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/contracts/openapi/presentation/tiffin/openapi.json",
+        "{projectRoot}/ftg.config.json"
+      ],
+      "outputs": [
+        "{projectRoot}/src/features/catalog/model/generated"
+      ],
+      "options": {
+        "command": "pnpm exec ftg generate --config apps/customer/ftg.config.json --json"
+      }
+    },
+    "generated-check": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "pnpm exec ftg check --config apps/customer/ftg.config.json --json"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "^build",
+        "ftg-generate",
+        "runtime-assets"
+      ],
+      "outputs": [
+        "{projectRoot}/.next",
+        "{projectRoot}/runtime-assets"
+      ],
+      "options": {
+        "command": "pnpm --filter @mpfrontend-tiffin/customer exec next build . --webpack"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "build"
+      ],
+      "options": {
+        "command": "pnpm --filter @mpfrontend-tiffin/customer exec tsc -p tsconfig.json --noEmit"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint apps/customer/src apps/customer/tests"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "pnpm --filter @mpfrontend-tiffin/customer exec next dev . --webpack -p 4411"
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "pnpm --filter @mpfrontend-tiffin/customer exec next start . -H 0.0.0.0 -p 4411"
+      }
+    },
+    "runtime-assets": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/scripts/prepare-runtime.mjs",
+        "{workspaceRoot}/pnpm-lock.yaml",
+        "{projectRoot}/package.json"
+      ],
+      "outputs": [
+        "{projectRoot}/runtime-assets"
+      ],
+      "options": {
+        "command": "node scripts/prepare-runtime.mjs customer"
+      }
+    }
+  }
+}

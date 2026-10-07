@@ -1,0 +1,112 @@
+/* Independently authored public sample theme. No private design export is embedded. */
+:root[data-brand="reference-dls"],
+:root[data-brand="reference-dls"][data-mode="light"],
+:root[data-brand="reference-dls"][data-mode="system"] {
+  --mp-action-primary: #6267e8;
+  --mp-action-primaryhover: #5156d8;
+  --mp-action-primarypressed: #4045bd;
+  --mp-action-secondary: #eef1f2;
+  --mp-action-secondaryhover: #e2e7e9;
+  --mp-action-danger: #cf3f48;
+  --mp-border-default: #cbd3d7;
+  --mp-border-focus: #6267e8;
+  --mp-border-strong: #74828a;
+  --mp-border-subtle: #e4e9eb;
+  --mp-focus-ring: #6267e8;
+  --mp-foreground-primary: #111a20;
+  --mp-foreground-secondary: #53616a;
+  --mp-foreground-muted: #74818a;
+  --mp-foreground-disabled: #a5afb4;
+  --mp-foreground-inverse: #ffffff;
+  --mp-surface-canvas: #f7f8f6;
+  --mp-surface-panel: #ffffff;
+  --mp-surface-raised: #ffffff;
+  --mp-surface-overlay: #ffffff;
+  --mp-surface-subtle: #f0f3f3;
+  --mp-surface-scrim: #111a20;
+  --mp-status-error: #cf3f48;
+  --mp-status-errorsurface: #fdebed;
+  --mp-status-success: #168c59;
+  --mp-status-successsurface: #e8f7f0;
+  --mp-status-info: #176fc1;
+  --mp-status-infosurface: #eaf4fd;
+  --mp-status-warning: #6d46c7;
+  --mp-status-warningsurface: #f3f0ff;
+  --mp-radius-control: 10px;
+  --mp-radius-surface: 18px;
+  --mp-radius-full: 9999px;
+}
+
+:root[data-brand="reference-dls"][data-mode="dark"] {
+  --mp-action-primary: #8fa3ff;
+  --mp-action-primaryhover: #a9b8ff;
+  --mp-action-primarypressed: #7488ee;
+  --mp-action-secondary: #243039;
+  --mp-action-secondaryhover: #303e47;
+  --mp-action-danger: #ef6c73;
+  --mp-border-default: #35454e;
+  --mp-border-focus: #8fa3ff;
+  --mp-border-strong: #64757f;
+  --mp-border-subtle: #27353d;
+  --mp-focus-ring: #8fa3ff;
+  --mp-foreground-primary: #f4f7f8;
+  --mp-foreground-secondary: #b8c3c9;
+  --mp-foreground-muted: #89979f;
+  --mp-foreground-disabled: #59676f;
+  --mp-foreground-inverse: #10171b;
+  --mp-surface-canvas: #10171b;
+  --mp-surface-panel: #182128;
+  --mp-surface-raised: #202b32;
+  --mp-surface-overlay: #26323a;
+  --mp-surface-subtle: #202b32;
+  --mp-surface-scrim: #05080a;
+  --mp-status-error: #ef6c73;
+  --mp-status-errorsurface: #391a1e;
+  --mp-status-success: #4dcc89;
+  --mp-status-successsurface: #143326;
+  --mp-status-info: #70b8f4;
+  --mp-status-infosurface: #142d42;
+  --mp-status-warning: #c4b5fd;
+  --mp-status-warningsurface: #2a2147;
+  --mp-radius-control: 10px;
+  --mp-radius-surface: 18px;
+  --mp-radius-full: 9999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-brand="reference-dls"][data-mode="system"] {
+    --mp-action-primary: #8fa3ff;
+    --mp-action-primaryhover: #a9b8ff;
+    --mp-action-primarypressed: #7488ee;
+    --mp-action-secondary: #243039;
+    --mp-action-secondaryhover: #303e47;
+    --mp-action-danger: #ef6c73;
+    --mp-border-default: #35454e;
+    --mp-border-focus: #8fa3ff;
+    --mp-border-strong: #64757f;
+    --mp-border-subtle: #27353d;
+    --mp-focus-ring: #8fa3ff;
+    --mp-foreground-primary: #f4f7f8;
+    --mp-foreground-secondary: #b8c3c9;
+    --mp-foreground-muted: #89979f;
+    --mp-foreground-disabled: #59676f;
+    --mp-foreground-inverse: #10171b;
+    --mp-surface-canvas: #10171b;
+    --mp-surface-panel: #182128;
+    --mp-surface-raised: #202b32;
+    --mp-surface-overlay: #26323a;
+    --mp-surface-subtle: #202b32;
+    --mp-surface-scrim: #05080a;
+    --mp-status-error: #ef6c73;
+    --mp-status-errorsurface: #391a1e;
+    --mp-status-success: #4dcc89;
+    --mp-status-successsurface: #143326;
+    --mp-status-info: #70b8f4;
+    --mp-status-infosurface: #142d42;
+    --mp-status-warning: #c4b5fd;
+    --mp-status-warningsurface: #2a2147;
+    --mp-radius-control: 10px;
+    --mp-radius-surface: 18px;
+    --mp-radius-full: 9999px;
+  }
+}

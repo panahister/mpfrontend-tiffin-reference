@@ -1,0 +1,12 @@
+node_modules/
+.nx/
+.next/
+dist/
+artifacts/tmp/
+tmp/
+*.tsbuildinfo
+.ftg-write.lock
+apps/*/runtime-assets/
+.env
+.env.*.local
+bff/certs/gateway.crt

@@ -1,0 +1,2045 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "tiffin admin presentation contracts",
+    "version": "1.7.0"
+  },
+  "paths": {
+    "/api/catalog": {
+      "get": {
+        "operationId": "ListRestaurants",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Restaurant page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestaurantPage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/business/kitchen/tickets/": {
+      "get": {
+        "operationId": "ListTickets",
+        "summary": "Authenticated admin read; backend enforces approved roles, ownership and city/tenant scope",
+        "x-required-roles": [
+          "restaurant-manager"
+        ],
+        "x-upstream": {
+          "source": "kitchen",
+          "path": "/v1/kitchen/tickets",
+          "operationId": "ListTickets"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versioned numeric JSON read profile (no coercion)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "items",
+                    "number",
+                    "size",
+                    "total",
+                    "hasMore",
+                    "pageCount"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "orderId",
+                          "orderNumber",
+                          "restaurantId",
+                          "restaurantName",
+                          "status",
+                          "readyInMinutes",
+                          "reason",
+                          "receivedOnUtc",
+                          "decidedOnUtc",
+                          "lines"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "orderId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "orderNumber": {
+                            "type": "string"
+                          },
+                          "restaurantId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "restaurantName": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "readyInMinutes": {
+                            "type": [
+                              "null",
+                              "integer"
+                            ],
+                            "format": "int32"
+                          },
+                          "reason": {
+                            "type": [
+                              "null",
+                              "string"
+                            ]
+                          },
+                          "receivedOnUtc": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "decidedOnUtc": {
+                            "type": [
+                              "null",
+                              "string"
+                            ],
+                            "format": "date-time"
+                          },
+                          "lines": {
+                            "type": "array",
+                            "items": {
+                              "required": [
+                                "code",
+                                "name",
+                                "quantity"
+                              ],
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "quantity": {
+                                  "type": "integer",
+                                  "format": "int32"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "number": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "size": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "total": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "pageCount": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "hasMore": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found within the permitted scope"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/menu/{id}": {
+      "get": {
+        "operationId": "GetMenu",
+        "summary": "Public restaurant menu advertisement; never a permission to modify it",
+        "x-upstream": {
+          "source": "restaurants",
+          "path": "/v1/restaurants/{restaurantId}/menu",
+          "operationId": "GetMenu"
+        },
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versioned numeric JSON read profile (no coercion)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "restaurantId",
+                    "name",
+                    "city",
+                    "currency",
+                    "isOpen",
+                    "pictureId",
+                    "items"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "restaurantId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "isOpen": {
+                      "type": "boolean"
+                    },
+                    "pictureId": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "uuid"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "code",
+                          "name",
+                          "price",
+                          "isAvailable",
+                          "pictureId"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "price": {
+                            "type": "number",
+                            "format": "double"
+                          },
+                          "isAvailable": {
+                            "type": "boolean"
+                          },
+                          "pictureId": {
+                            "type": [
+                              "null",
+                              "string"
+                            ],
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found within the permitted scope"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/restaurants": {
+      "post": {
+        "operationId": "RegisterRestaurant",
+        "summary": "Explicit admin mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "closed-declared-fields-v1",
+        "x-response-profile": "json-v1",
+        "x-upstream": {
+          "source": "restaurants",
+          "path": "/v1/restaurants",
+          "operationId": "RegisterRestaurant"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "name",
+                  "currency"
+                ],
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "currency": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Upstream declared success; consumer numeric JSON response profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "restaurantId",
+                    "name",
+                    "city",
+                    "currency",
+                    "isOpen",
+                    "pictureId",
+                    "items"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "restaurantId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "isOpen": {
+                      "type": "boolean"
+                    },
+                    "pictureId": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "uuid"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "code",
+                          "name",
+                          "price",
+                          "isAvailable",
+                          "pictureId"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "price": {
+                            "type": "number",
+                            "format": "double"
+                          },
+                          "isAvailable": {
+                            "type": "boolean"
+                          },
+                          "pictureId": {
+                            "type": [
+                              "null",
+                              "string"
+                            ],
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/restaurants/{restaurantId}/menu/{code}": {
+      "put": {
+        "operationId": "SetMenuItem",
+        "summary": "Explicit admin mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "closed-declared-fields-v1",
+        "x-response-profile": "json-v1",
+        "x-upstream": {
+          "source": "restaurants",
+          "path": "/v1/restaurants/{restaurantId}/menu/{code}",
+          "operationId": "SetMenuItem"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "name",
+                  "price",
+                  "isAvailable",
+                  "pictureId"
+                ],
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "price": {
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "isAvailable": {
+                    "type": [
+                      "null",
+                      "boolean"
+                    ]
+                  },
+                  "pictureId": {
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "format": "uuid"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upstream declared success; consumer numeric JSON response profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "restaurantId",
+                    "name",
+                    "city",
+                    "currency",
+                    "isOpen",
+                    "pictureId",
+                    "items"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "restaurantId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "isOpen": {
+                      "type": "boolean"
+                    },
+                    "pictureId": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "uuid"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "code",
+                          "name",
+                          "price",
+                          "isAvailable",
+                          "pictureId"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "price": {
+                            "type": "number",
+                            "format": "double"
+                          },
+                          "isAvailable": {
+                            "type": "boolean"
+                          },
+                          "pictureId": {
+                            "type": [
+                              "null",
+                              "string"
+                            ],
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/restaurants/{restaurantId}/picture": {
+      "put": {
+        "operationId": "ShowRestaurantPicture",
+        "summary": "Explicit admin mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "closed-declared-fields-v1",
+        "x-response-profile": "json-v1",
+        "x-upstream": {
+          "source": "restaurants",
+          "path": "/v1/restaurants/{restaurantId}/picture",
+          "operationId": "ShowRestaurantPicture"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "pictureId"
+                ],
+                "type": "object",
+                "properties": {
+                  "pictureId": {
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "format": "uuid"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upstream declared success; consumer numeric JSON response profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "restaurantId",
+                    "name",
+                    "city",
+                    "currency",
+                    "isOpen",
+                    "pictureId",
+                    "items"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "restaurantId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "isOpen": {
+                      "type": "boolean"
+                    },
+                    "pictureId": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "uuid"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "code",
+                          "name",
+                          "price",
+                          "isAvailable",
+                          "pictureId"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "price": {
+                            "type": "number",
+                            "format": "double"
+                          },
+                          "isAvailable": {
+                            "type": "boolean"
+                          },
+                          "pictureId": {
+                            "type": [
+                              "null",
+                              "string"
+                            ],
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/kitchen/tickets/{orderId}/accept": {
+      "post": {
+        "operationId": "AcceptTicket",
+        "summary": "Explicit admin mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "closed-declared-fields-v1",
+        "x-response-profile": "json-v1",
+        "x-upstream": {
+          "source": "kitchen",
+          "path": "/v1/kitchen/tickets/{orderId}/accept",
+          "operationId": "AcceptTicket"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "readyInMinutes"
+                ],
+                "type": "object",
+                "properties": {
+                  "readyInMinutes": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upstream declared success; consumer numeric JSON response profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "orderId",
+                    "orderNumber",
+                    "restaurantId",
+                    "restaurantName",
+                    "status",
+                    "readyInMinutes",
+                    "reason",
+                    "receivedOnUtc",
+                    "decidedOnUtc",
+                    "lines"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "orderNumber": {
+                      "type": "string"
+                    },
+                    "restaurantId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "restaurantName": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "readyInMinutes": {
+                      "type": [
+                        "null",
+                        "integer"
+                      ],
+                      "format": "int32"
+                    },
+                    "reason": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "receivedOnUtc": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "decidedOnUtc": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "date-time"
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "code",
+                          "name",
+                          "quantity"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "format": "int32"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/kitchen/tickets/{orderId}/reject": {
+      "post": {
+        "operationId": "RejectTicket",
+        "summary": "Explicit admin mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "closed-declared-fields-v1",
+        "x-response-profile": "json-v1",
+        "x-upstream": {
+          "source": "kitchen",
+          "path": "/v1/kitchen/tickets/{orderId}/reject",
+          "operationId": "RejectTicket"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "reason"
+                ],
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upstream declared success; consumer numeric JSON response profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "orderId",
+                    "orderNumber",
+                    "restaurantId",
+                    "restaurantName",
+                    "status",
+                    "readyInMinutes",
+                    "reason",
+                    "receivedOnUtc",
+                    "decidedOnUtc",
+                    "lines"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "orderNumber": {
+                      "type": "string"
+                    },
+                    "restaurantId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "restaurantName": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "readyInMinutes": {
+                      "type": [
+                        "null",
+                        "integer"
+                      ],
+                      "format": "int32"
+                    },
+                    "reason": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "receivedOnUtc": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "decidedOnUtc": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "date-time"
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "code",
+                          "name",
+                          "quantity"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "format": "int32"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/restaurants/{restaurantId}/open": {
+      "post": {
+        "operationId": "OpenRestaurant",
+        "summary": "Explicit admin mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "bodyless-v1",
+        "x-response-profile": "json-v1",
+        "x-upstream": {
+          "source": "restaurants",
+          "path": "/v1/restaurants/{restaurantId}/open",
+          "operationId": "OpenRestaurant"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upstream declared success; consumer numeric JSON response profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "restaurantId",
+                    "name",
+                    "city",
+                    "currency",
+                    "isOpen",
+                    "pictureId",
+                    "items"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "restaurantId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "isOpen": {
+                      "type": "boolean"
+                    },
+                    "pictureId": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "uuid"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "code",
+                          "name",
+                          "price",
+                          "isAvailable",
+                          "pictureId"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "price": {
+                            "type": "number",
+                            "format": "double"
+                          },
+                          "isAvailable": {
+                            "type": "boolean"
+                          },
+                          "pictureId": {
+                            "type": [
+                              "null",
+                              "string"
+                            ],
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/restaurants/{restaurantId}/close": {
+      "post": {
+        "operationId": "CloseRestaurant",
+        "summary": "Explicit admin mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "bodyless-v1",
+        "x-response-profile": "json-v1",
+        "x-upstream": {
+          "source": "restaurants",
+          "path": "/v1/restaurants/{restaurantId}/close",
+          "operationId": "CloseRestaurant"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upstream declared success; consumer numeric JSON response profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "restaurantId",
+                    "name",
+                    "city",
+                    "currency",
+                    "isOpen",
+                    "pictureId",
+                    "items"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "restaurantId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "isOpen": {
+                      "type": "boolean"
+                    },
+                    "pictureId": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "uuid"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "required": [
+                          "code",
+                          "name",
+                          "price",
+                          "isAvailable",
+                          "pictureId"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "price": {
+                            "type": "number",
+                            "format": "double"
+                          },
+                          "isAvailable": {
+                            "type": "boolean"
+                          },
+                          "pictureId": {
+                            "type": [
+                              "null",
+                              "string"
+                            ],
+                            "format": "uuid"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/media/uploads": {
+      "post": {
+        "operationId": "ReserveUpload",
+        "summary": "Explicit admin mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "closed-declared-fields-v1",
+        "x-response-profile": "json-v1",
+        "x-upstream": {
+          "source": "media",
+          "path": "/v1/media/uploads",
+          "operationId": "ReserveUpload"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "purpose",
+                  "fileName",
+                  "contentType",
+                  "size"
+                ],
+                "type": "object",
+                "properties": {
+                  "purpose": {
+                    "type": "string"
+                  },
+                  "fileName": {
+                    "type": "string"
+                  },
+                  "contentType": {
+                    "type": "string"
+                  },
+                  "size": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Upstream declared success; consumer numeric JSON response profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "mediaId",
+                    "uploadUrl",
+                    "method",
+                    "contentType",
+                    "size",
+                    "expiresOnUtc"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "mediaId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "uploadUrl": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "method": {
+                      "type": "string"
+                    },
+                    "contentType": {
+                      "type": "string"
+                    },
+                    "size": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "expiresOnUtc": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/media/{mediaId}/confirm": {
+      "post": {
+        "operationId": "ConfirmUpload",
+        "summary": "Explicit admin mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "bodyless-v1",
+        "x-response-profile": "json-v1",
+        "x-upstream": {
+          "source": "media",
+          "path": "/v1/media/{mediaId}/confirm",
+          "operationId": "ConfirmUpload"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upstream declared success; consumer numeric JSON response profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "mediaId",
+                    "city",
+                    "purpose",
+                    "fileName",
+                    "contentType",
+                    "size",
+                    "state",
+                    "reservedOnUtc",
+                    "availableOnUtc",
+                    "downloadUrl",
+                    "downloadUrlExpiresOnUtc"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "mediaId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "purpose": {
+                      "type": "string"
+                    },
+                    "fileName": {
+                      "type": "string"
+                    },
+                    "contentType": {
+                      "type": "string"
+                    },
+                    "size": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "state": {
+                      "type": "string"
+                    },
+                    "reservedOnUtc": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "availableOnUtc": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "date-time"
+                    },
+                    "downloadUrl": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "uri"
+                    },
+                    "downloadUrlExpiresOnUtc": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/tracking/deliveries/{orderId}/positions": {
+      "post": {
+        "operationId": "ReportPosition",
+        "summary": "Explicit admin mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "closed-declared-fields-v1",
+        "x-response-profile": "empty-v1",
+        "x-upstream": {
+          "source": "tracking",
+          "path": "/v1/tracking/deliveries/{orderId}/positions",
+          "operationId": "ReportPosition"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "latitude",
+                  "longitude"
+                ],
+                "type": "object",
+                "properties": {
+                  "latitude": {
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "longitude": {
+                    "type": "number",
+                    "format": "double"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Upstream declared success; exact empty response profile"
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/business/media/{mediaId}": {
+      "get": {
+        "operationId": "GetMedia",
+        "summary": "Authenticated admin read; backend enforces approved roles, ownership and city/tenant scope",
+        "x-required-roles": [
+          "restaurant-manager",
+          "city-admin"
+        ],
+        "x-upstream": {
+          "source": "media",
+          "path": "/v1/media/{mediaId}",
+          "operationId": "GetMedia"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versioned numeric JSON read profile (no coercion)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "mediaId",
+                    "city",
+                    "purpose",
+                    "fileName",
+                    "contentType",
+                    "size",
+                    "state",
+                    "reservedOnUtc",
+                    "availableOnUtc",
+                    "downloadUrl",
+                    "downloadUrlExpiresOnUtc"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "mediaId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "purpose": {
+                      "type": "string"
+                    },
+                    "fileName": {
+                      "type": "string"
+                    },
+                    "contentType": {
+                      "type": "string"
+                    },
+                    "size": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "state": {
+                      "type": "string"
+                    },
+                    "reservedOnUtc": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "availableOnUtc": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "date-time"
+                    },
+                    "downloadUrl": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "uri"
+                    },
+                    "downloadUrlExpiresOnUtc": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found within the permitted scope"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "DeleteMedia",
+        "summary": "Explicit admin mutation; backend remains the authorization and business-rule authority",
+        "x-request-profile": "bodyless-v1",
+        "x-response-profile": "json-v1",
+        "x-upstream": {
+          "source": "media",
+          "path": "/v1/media/{mediaId}",
+          "operationId": "DeleteMedia"
+        },
+        "security": [
+          {
+            "bffSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "mediaId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upstream declared success; consumer numeric JSON response profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "mediaId",
+                    "city",
+                    "purpose",
+                    "fileName",
+                    "contentType",
+                    "size",
+                    "state",
+                    "reservedOnUtc",
+                    "availableOnUtc",
+                    "downloadUrl",
+                    "downloadUrlExpiresOnUtc"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "mediaId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "purpose": {
+                      "type": "string"
+                    },
+                    "fileName": {
+                      "type": "string"
+                    },
+                    "contentType": {
+                      "type": "string"
+                    },
+                    "size": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "state": {
+                      "type": "string"
+                    },
+                    "reservedOnUtc": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "availableOnUtc": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "date-time"
+                    },
+                    "downloadUrl": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "uri"
+                    },
+                    "downloadUrlExpiresOnUtc": {
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid declared request"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Business or concurrency conflict"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Restaurant": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "restaurantId",
+          "name",
+          "city",
+          "currency",
+          "isOpen"
+        ],
+        "properties": {
+          "restaurantId": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "city": {
+            "type": "string",
+            "readOnly": true
+          },
+          "currency": {
+            "type": "string",
+            "readOnly": true
+          },
+          "isOpen": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "pictureId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "readOnly": true
+          }
+        }
+      },
+      "RestaurantPage": {
+        "type": "object",
+        "required": [
+          "items",
+          "number",
+          "size",
+          "total",
+          "pageCount",
+          "hasMore"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Restaurant"
+            }
+          },
+          "number": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "pageCount": {
+            "type": "integer"
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bffSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "tiffin_admin_session",
+        "description": "HttpOnly admin BFF session. Do not supply backend bearer tokens in the browser."
+      }
+    }
+  },
+  "x-read-projection": {
+    "version": 1,
+    "upstreamRevision": "2026-10-07-openapi-metadata-r4",
+    "sha256": {
+      "ordering": "8d5a175a773ae6d24104e2de667077886a078dbba432b05adb3775218774f00d",
+      "notifications": "38d63ac3cb9254455313a386cbdfbf4c1900b903718e6e10660c3ab75f345be8",
+      "restaurants": "e8bddd9c416b9b22b13230f4654fe044bc1a131856245e3f6a33694df215f1c9",
+      "tracking": "3e43866055d8d092078c817d27f394e639d98d3ee83bd333a15b58d3c1f2a459",
+      "access": "bc675dc165c890fa2425e7134c74332544f6f5982f507a99b77f7032c8f26390",
+      "kitchen": "ba4003e08b41c48529efd4fe154e6546f8fdb77d1e834fa1ec1395fa31f4c23d",
+      "media": "1008b9bd1dd720d07c7ddc668bf250818410f5bdb494b02516d54303b6fccda3"
+    },
+    "numericProfile": "JSON numbers only; never coerce numeric strings",
+    "computedPageFields": "hasMore/pageCount required by the consumer"
+  },
+  "x-request-projection": {
+    "version": 1,
+    "upstreamRevision": "2026-10-07-openapi-metadata-r4",
+    "sha256": {
+      "ordering": "8d5a175a773ae6d24104e2de667077886a078dbba432b05adb3775218774f00d",
+      "notifications": "38d63ac3cb9254455313a386cbdfbf4c1900b903718e6e10660c3ab75f345be8",
+      "restaurants": "e8bddd9c416b9b22b13230f4654fe044bc1a131856245e3f6a33694df215f1c9",
+      "tracking": "3e43866055d8d092078c817d27f394e639d98d3ee83bd333a15b58d3c1f2a459",
+      "access": "bc675dc165c890fa2425e7134c74332544f6f5982f507a99b77f7032c8f26390",
+      "kitchen": "ba4003e08b41c48529efd4fe154e6546f8fdb77d1e834fa1ec1395fa31f4c23d",
+      "media": "1008b9bd1dd720d07c7ddc668bf250818410f5bdb494b02516d54303b6fccda3"
+    },
+    "profiles": [
+      "closed-declared-fields-v1",
+      "bodyless-v1",
+      "optional-json-v1"
+    ],
+    "restriction": "Consumer-only JSON inputs preserve required, absent and optional-null body semantics; object fields are closed and upstream remains unchanged"
+  },
+  "x-response-projection": {
+    "version": 1,
+    "upstreamRevision": "2026-10-07-openapi-metadata-r4",
+    "sha256": {
+      "ordering": "8d5a175a773ae6d24104e2de667077886a078dbba432b05adb3775218774f00d",
+      "notifications": "38d63ac3cb9254455313a386cbdfbf4c1900b903718e6e10660c3ab75f345be8",
+      "restaurants": "e8bddd9c416b9b22b13230f4654fe044bc1a131856245e3f6a33694df215f1c9",
+      "tracking": "3e43866055d8d092078c817d27f394e639d98d3ee83bd333a15b58d3c1f2a459",
+      "access": "bc675dc165c890fa2425e7134c74332544f6f5982f507a99b77f7032c8f26390",
+      "kitchen": "ba4003e08b41c48529efd4fe154e6546f8fdb77d1e834fa1ec1395fa31f4c23d",
+      "media": "1008b9bd1dd720d07c7ddc668bf250818410f5bdb494b02516d54303b6fccda3"
+    },
+    "profiles": [
+      "json-v1",
+      "empty-v1"
+    ],
+    "restriction": "Empty success responses are explicit and never represented as null or an empty JSON object"
+  }
+}

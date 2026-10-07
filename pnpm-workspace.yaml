@@ -1,0 +1,32 @@
+packages:
+  - apps/*
+  - packages/*
+  - themes/*
+overrides:
+  '@mpfrontend/ai-skills': file:artifacts/packages/mpfrontend-ai-skills-0.1.0-dev.11.tgz
+  'axios@1.18.1': '1.20.0'
+  'brace-expansion@5.0.9': '5.0.12'
+  'smol-toml@1.6.1': '1.9.0'
+  '@mpfrontend/ui': file:artifacts/packages/mpfrontend-ui-0.1.0-dev.4.tgz
+  '@mpfrontend/primitives': file:artifacts/packages/mpfrontend-primitives-0.1.0-dev.0.tgz
+  '@mpfrontend/ftg-core': file:artifacts/packages/mpfrontend-ftg-core-0.1.0-dev.5.tgz
+  '@mpfrontend/nx-plugin': file:artifacts/packages/mpfrontend-nx-plugin-0.1.0-dev.17.tgz
+allowBuilds:
+  '@scarf/scarf': false
+  esbuild: true
+  nx: true
+  protobufjs: false
+  sharp: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@typescript-eslint/eslint-plugin@8.71.1'
+  - '@typescript-eslint/parser@8.71.1'
+  - '@typescript-eslint/project-service@8.71.1'
+  - '@typescript-eslint/scope-manager@8.71.1'
+  - '@typescript-eslint/tsconfig-utils@8.71.1'
+  - '@typescript-eslint/type-utils@8.71.1'
+  - '@typescript-eslint/types@8.71.1'
+  - '@typescript-eslint/typescript-estree@8.71.1'
+  - '@typescript-eslint/utils@8.71.1'
+  - '@typescript-eslint/visitor-keys@8.71.1'
+  - typescript-eslint@8.71.1

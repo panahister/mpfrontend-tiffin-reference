@@ -1,0 +1,39 @@
+{
+  "name": "mpfrontend-tiffin-reference",
+  "version": "0.1.0-dev.0",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "engines": { "node": ">=24 <25" },
+  "scripts": {
+    "check": "node scripts/verify-core-artifacts.mjs && node scripts/verify-public-repository.mjs && nx run-many -t lint typecheck test build generated-check design-verify",
+    "artifacts:verify": "node scripts/verify-core-artifacts.mjs",
+    "public:verify": "node scripts/verify-public-repository.mjs",
+    "build": "nx run-many -t build --projects=tiffin-customer,tiffin-admin",
+    "dev:customer": "nx run tiffin-customer:dev",
+    "dev:admin": "nx run tiffin-admin:dev",
+    "start:customer": "nx run tiffin-customer:start",
+    "start:admin": "nx run tiffin-admin:start"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "1.14.5",
+    "@grpc/proto-loader": "0.8.1"
+  },
+  "devDependencies": {
+    "@mpfrontend/presentation-server": "file:artifacts/packages/mpfrontend-presentation-server-0.1.0-dev.3.tgz",
+    "@mpfrontend/security-bff": "file:artifacts/packages/mpfrontend-security-bff-0.1.0-dev.6.tgz",
+    "@mpfrontend/primitives": "file:artifacts/packages/mpfrontend-primitives-0.1.0-dev.0.tgz",
+    "@mpfrontend/ftg-cli": "file:artifacts/packages/mpfrontend-ftg-cli-0.1.0-dev.18.tgz",
+    "@mpfrontend/ftg-core": "file:artifacts/packages/mpfrontend-ftg-core-0.1.0-dev.5.tgz",
+    "@mpfrontend/nx-plugin": "file:artifacts/packages/mpfrontend-nx-plugin-0.1.0-dev.17.tgz",
+    "@types/node": "24.10.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.2.3",
+    "@tailwindcss/postcss": "4.3.3",
+    "eslint": "10.12.0",
+    "nx": "23.2.1",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.1",
+    "tailwindcss": "4.3.3"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "generator": "FTG",
+  "version": "0.1.0-dev.6",
+  "irVersion": 3,
+  "contractHash": "7ac5ca80c59835d6022771837e2f06a3291091843881e2da70edfa95925f3697",
+  "files": {
+    "resources.gen.ts": "6aa6dc396bb5763754ae231ad2cc1e5f8cdf6a098c2975a51734586439f7974a",
+    "read-models.gen.ts": "53cde25244a75186ac411640c275c997a4f01f2a0ea653e91af1c1030afbd76e",
+    "read-validators.gen.cjs": "04c324b831fc078eaf5ef9349176aca8685ae736ef40d31794cb7c34fa014ba0",
+    "read-validators.gen.d.cts": "8c87985b33fbe8a11ab2d80e18b2af2c03a80c98141abbbd56951d0067d660a7",
+    "requests.gen.ts": "7af8e79735929e1ca8908f2a6856ee962e3d89577262d5b43362ddf66436ec89",
+    "request-models.gen.ts": "46242342310fc6a5e4d24bff28dbc080767f781f46cb8c237d591e79e08d00ba",
+    "request-validators.gen.cjs": "1277be738fa8ea2ae3c121e106bad12878237b8694c6710a3762ede37162be5f",
+    "request-validators.gen.d.cts": "8541e0dfc06ced05a8d1124af40ce3e0e44bef0c3114602a811ea53e3c45fdba"
+  }
+}

@@ -1,0 +1,86 @@
+# Local development proof using already verified host builds; no registry install inside Docker.
+name: mpfrontend-tiffin-reference
+x-app: &app
+  image: mpfrontend-tiffin-reference:local
+  build:
+    context: .
+    dockerfile: Dockerfile.local
+  extra_hosts:
+    - host.docker.internal:host-gateway
+  restart: unless-stopped
+services:
+  customer:
+    <<: *app
+    working_dir: /workspace/apps/customer
+    command: ["node","/workspace/presentation/server.mjs"]
+    environment:
+      BACKEND_ORIGIN: http://host.docker.internal:39080
+      APP_KIND: customer
+      APP_PORT: "4411"
+      PUBLIC_ORIGIN: http://localhost:4411
+      BFF_ORIGIN: http://customer-bff:4511
+      MEDIA_PUBLIC_ORIGIN: http://localhost:39000
+      ENABLE_API_DOCS: "true"
+    ports: ["4411:4411"]
+    depends_on:
+      customer-bff: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD","node","-e","Promise.all([fetch('http://127.0.0.1:4411').then(r=>{if(!r.ok)throw Error()}),fetch('http://127.0.0.1:4411/api/catalog?search=seattle&page=1&size=1').then(async r=>{if(!r.ok||!Array.isArray((await r.json()).items))throw Error()})]).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 12s
+      retries: 8
+  admin:
+    <<: *app
+    working_dir: /workspace/apps/admin
+    command: ["node","/workspace/presentation/server.mjs"]
+    environment:
+      BACKEND_ORIGIN: http://host.docker.internal:39080
+      APP_KIND: admin
+      APP_PORT: "4412"
+      PUBLIC_ORIGIN: http://localhost:4412
+      BFF_ORIGIN: http://admin-bff:4512
+      MEDIA_PUBLIC_ORIGIN: http://localhost:39000
+      ENABLE_API_DOCS: "true"
+    ports: ["4412:4412"]
+    depends_on:
+      admin-bff: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD","node","-e","fetch('http://127.0.0.1:4412').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 12s
+      retries: 8
+  customer-bff:
+    <<: *app
+    working_dir: /workspace
+    command: ["node","bff/server.mjs"]
+    environment:
+      APP_KIND: customer
+      BFF_BIND: 0.0.0.0
+      BFF_PORT: "4511"
+      PUBLIC_ORIGIN: http://localhost:4411
+      GATEWAY_ORIGIN: http://host.docker.internal:39080
+      OIDC_ISSUER: http://localhost:38180/realms/tiffin
+      OIDC_PROVIDER_ORIGIN: http://host.docker.internal:38180
+    healthcheck:
+      test: ["CMD","node","-e","fetch('http://127.0.0.1:4511/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 8
+  admin-bff:
+    <<: *app
+    working_dir: /workspace
+    command: ["node","bff/server.mjs"]
+    environment:
+      APP_KIND: admin
+      BFF_BIND: 0.0.0.0
+      BFF_PORT: "4512"
+      PUBLIC_ORIGIN: http://localhost:4412
+      GATEWAY_ORIGIN: http://host.docker.internal:39080
+      GRPC_GATEWAY_TARGET: host.docker.internal:39443
+      OIDC_ISSUER: http://localhost:38180/realms/tiffin
+      OIDC_PROVIDER_ORIGIN: http://host.docker.internal:38180
+    healthcheck:
+      test: ["CMD","node","-e","fetch('http://127.0.0.1:4512/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 8

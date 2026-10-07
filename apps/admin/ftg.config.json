@@ -1,0 +1,28 @@
+{
+  "openapi": "../../contracts/openapi/presentation/tiffin/admin/openapi.json",
+  "output": "src/features/catalog/model/generated",
+  "requests": [{"name":"register-restaurant","operationId":"RegisterRestaurant"},{"name":"menu-item","operationId":"SetMenuItem"},{"name":"restaurant-picture","operationId":"ShowRestaurantPicture"},{"name":"reserve-media-upload","operationId":"ReserveUpload"},{"name":"confirm-media-upload","operationId":"ConfirmUpload","body":"none"},{"name":"delete-media","operationId":"DeleteMedia","body":"none"},{"name":"accept-ticket","operationId":"AcceptTicket"},{"name":"reject-ticket","operationId":"RejectTicket"},{"name":"open-restaurant","operationId":"OpenRestaurant","body":"none"},{"name":"close-restaurant","operationId":"CloseRestaurant","body":"none"},{"name":"report-position","operationId":"ReportPosition"}],
+  "resources": [
+    {"name":"register-restaurant","operationId":"RegisterRestaurant","responseStatus":"201"},
+    {"name":"menu-item","operationId":"SetMenuItem","responseStatus":"200"},
+    {"name":"restaurant-picture","operationId":"ShowRestaurantPicture","responseStatus":"200"},
+    {"name":"reserve-media-upload","operationId":"ReserveUpload","responseStatus":"201"},
+    {"name":"confirm-media-upload","operationId":"ConfirmUpload","responseStatus":"200"},
+    {"name":"get-media","operationId":"GetMedia","responseStatus":"200"},
+    {"name":"delete-media","operationId":"DeleteMedia","responseStatus":"200"},
+    {"name":"accept-ticket","operationId":"AcceptTicket","responseStatus":"200"},
+    {"name":"reject-ticket","operationId":"RejectTicket","responseStatus":"200"},
+    {"name":"open-restaurant","operationId":"OpenRestaurant","responseStatus":"200"},
+    {"name":"close-restaurant","operationId":"CloseRestaurant","responseStatus":"200"},
+    {"name":"report-position","operationId":"ReportPosition","responseStatus":"204","body":"none"},
+    {"name":"menu","operationId":"GetMenu"},
+    {"name":"kitchen","operationId":"ListTickets","responsePath":["items"]},
+    {
+      "name": "catalog",
+      "operationId": "ListRestaurants",
+      "responsePath": [
+        "items"
+      ]
+    }
+  ]
+}

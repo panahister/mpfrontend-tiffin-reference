@@ -1,0 +1,14 @@
+{
+  "name": "tiffin-dls-adapter",
+  "root": "packages/dls-adapter",
+  "sourceRoot": "packages/dls-adapter/src",
+  "projectType": "library",
+  "tags": ["scope:reference", "runtime:client", "type:adapter"],
+  "targets": {
+    "design-verify": { "executor": "nx:run-commands", "cache": false, "options": { "command": "node scripts/verify-public-theme.mjs" } },
+    "build": { "executor": "nx:run-commands", "outputs": ["{projectRoot}/dist"], "options": { "command": "tsc -p packages/dls-adapter/tsconfig.json" } },
+    "typecheck": { "executor": "nx:run-commands", "options": { "command": "tsc -p packages/dls-adapter/tsconfig.json --noEmit" } },
+    "lint": { "executor": "nx:run-commands", "options": { "command": "eslint packages/dls-adapter/src packages/dls-adapter/tests" } },
+    "test": { "executor": "nx:run-commands", "options": { "command": "node --import tsx --test packages/dls-adapter/tests/*.test.ts", "env": { "TSX_TSCONFIG_PATH": "tsconfig.base.json" } } }
+  }
+}
