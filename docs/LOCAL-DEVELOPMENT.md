@@ -8,9 +8,9 @@ services, default RustFS media store, US demo data, Customer application, and Op
 
 | Workflow | Docker owns | Host owns | Best for |
 |---|---|---|---|
-| **Backend Developer** | Infrastructure and the four frontend processes | Nine .NET services | Backend breakpoints, service changes, migrations, and scenario work |
-| **Frontend Developer** | The complete seeded backend platform | Customer and Operations with Next.js hot reload, plus both host BFFs | UI, BFF, generated-contract, localization, and product-adapter work |
-| **Full Demo** | The entire product | Nothing | Reviewers and contributors who want the integrated result with one command |
+| **Hybrid Mode** | Infrastructure and the four frontend processes | Nine .NET services | Backend breakpoints, service changes, migrations, and scenario work |
+| **Frontend Mode** | The complete seeded backend platform | Customer and Operations with Next.js hot reload, plus both host BFFs | UI, BFF, generated-contract, localization, and product-adapter work |
+| **Full Demo Mode** | The entire product | Nothing | Reviewers and contributors who want the integrated result with one command |
 
 The complete reference spans four public repositories. Keep them as siblings:
 
@@ -33,7 +33,7 @@ The backend repository owns the integrated Docker topology. Advanced layouts may
 `TIFFIN_FRONTEND_SOURCE_DIR`, `TIFFIN_BACKEND_SOURCE_DIR`, and the documented Keycloak/APISIX source
 variables instead of using sibling checkouts.
 
-## Frontend Developer Mode
+## Frontend Mode
 
 This is the shortest path for frontend implementation. Docker builds and starts PostgreSQL,
 TimescaleDB, Kafka, RabbitMQ, Redis, Keycloak, APISIX, WireMock, RustFS, and all nine .NET services. It
@@ -75,6 +75,17 @@ Open:
 - Keycloak: `http://localhost:38180`
 - APISIX HTTPS edge: `https://localhost:39443`
 
+Verify the applications and real seeded catalog:
+
+```bash
+curl --fail --silent http://localhost:4411/ >/dev/null
+curl --fail --silent http://localhost:4412/ >/dev/null
+curl --fail --silent 'http://localhost:4411/api/catalog?search=seattle&page=1&size=1' >/dev/null
+```
+
+Keep the Docker backend running during the daily edit loop. Next.js reloads presentation changes; restart
+`pnpm dev:product` after BFF or launcher changes.
+
 Press `Ctrl+C` once to stop all four frontend processes. The backend and demo data remain running, so a
 frontend restart is fast. Stop that backend without deleting data:
 
@@ -86,7 +97,7 @@ scripts/full-demo.sh down
 Use `scripts/full-demo.sh reset` only when you intentionally want to delete the local demo databases,
 queues, identity state, and media volumes.
 
-## Backend Developer Mode
+## Hybrid Mode
 
 This path keeps infrastructure in Docker, all nine .NET services on the host, and the four frontend
 processes in Docker. It gives backend developers direct IDE/debugger ownership while still presenting
@@ -107,6 +118,16 @@ pnpm install --frozen-lockfile
 docker compose -f compose.local.yaml up --detach --build --wait
 ```
 
+Verify that both browser applications reach the host-debugged services:
+
+```bash
+curl --fail --silent http://localhost:4411/ >/dev/null
+curl --fail --silent http://localhost:4412/ >/dev/null
+```
+
+Before review, run `scripts/scenarios.sh` from the backend checkout. The browser and scenario requests use
+the same Keycloak, APISIX, messaging, storage, and service ports that the IDE-hosted services use.
+
 Open the same Customer and Operations URLs. To debug one backend in an IDE, stop the launcher process
 for that service before binding its port. The backend [running guide](https://github.com/panahister/mpcore-tiffin-sample/blob/main/docs/running.md)
 explains one-service execution and scenario commands.
@@ -114,7 +135,7 @@ explains one-service execution and scenario commands.
 Stop without deleting data:
 
 ```bash
-cd mpfrontend-tiffin-reference
+cd ../mpfrontend-tiffin-reference
 docker compose -f compose.local.yaml down
 
 cd ../mpcore-tiffin-sample
@@ -131,6 +152,15 @@ starts the browser applications:
 ```bash
 cd mpcore-tiffin-sample
 scripts/full-demo.sh up
+```
+
+The command prints `The complete Tiffin demo is ready.` only after health checks and the idempotent seed
+succeed. Verify Customer, Operations, and identity discovery:
+
+```bash
+curl --fail --silent http://localhost:4411/ >/dev/null
+curl --fail --silent http://localhost:4412/ >/dev/null
+curl --fail --silent http://localhost:38180/realms/tiffin/.well-known/openid-configuration >/dev/null
 ```
 
 Use:
@@ -160,9 +190,9 @@ cohort.
 ## Trade-offs and safety rules
 
 - Full Demo is the simplest evaluation but does not provide host breakpoints.
-- Frontend Developer Mode is optimized for UI/BFF work; backend image rebuilds are slower than a host
+- Frontend Mode is optimized for UI/BFF work; backend image rebuilds are slower than a host
   service restart.
-- Backend Developer Mode exposes every .NET process to the host debugger but requires the full backend
+- Hybrid Mode exposes every .NET process to the host debugger but requires the full backend
   toolchain and more terminals or an IDE.
 - Do not run Full Demo together with either host mode: they intentionally use the same local ports.
 - A package-integrity error means the committed MP Frontend archive cohort and lock disagree; do not edit

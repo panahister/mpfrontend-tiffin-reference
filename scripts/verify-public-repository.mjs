@@ -28,6 +28,9 @@ const forbiddenMarkers=[
   /Payment Git/,
 ];
 const failures=[];
+for(const relative of ['docs/FRONTEND-CONVENTIONS.md']){
+  if(!existsSync(join(root,relative)))failures.push(`${relative}: required public guide is missing`);
+}
 for(const path of documents){
   const content=readFileSync(path,'utf8');
   if(forbiddenLetters.test(content))failures.push(`${path}: Persian-specific text is not allowed`);
