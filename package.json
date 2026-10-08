@@ -5,10 +5,11 @@
   "packageManager": "pnpm@11.25.0",
   "engines": { "node": ">=24 <25" },
   "scripts": {
-    "check": "node scripts/verify-core-artifacts.mjs && node scripts/verify-public-repository.mjs && nx run-many -t lint typecheck test build generated-check design-verify",
+    "check": "node scripts/verify-core-artifacts.mjs && node scripts/verify-public-repository.mjs && node --check scripts/dev-product.mjs && nx run-many -t lint typecheck test build generated-check design-verify",
     "artifacts:verify": "node scripts/verify-core-artifacts.mjs",
     "public:verify": "node scripts/verify-public-repository.mjs",
     "build": "nx run-many -t build --projects=tiffin-customer,tiffin-admin",
+    "dev:product": "node scripts/dev-product.mjs",
     "dev:customer": "nx run tiffin-customer:dev",
     "dev:admin": "nx run tiffin-admin:dev",
     "start:customer": "nx run tiffin-customer:start",

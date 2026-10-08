@@ -96,6 +96,34 @@ Teams with an approved design system may use MP Frontend's `existing` source mod
 Code-first teams may use `none`. MP Frontend validates reviewed local artifacts; it does not connect to,
 mutate, or publish a design file.
 
+## Run the product
+
+The recommended frontend workflow keeps the complete seeded backend in Docker, runs the two web
+applications with Next.js hot reload, and supervises their BFFs from this checkout:
+
+```bash
+git clone https://github.com/panahister/mpcore-tiffin-sample.git
+git clone https://github.com/panahister/mpfrontend-tiffin-reference.git
+git clone https://github.com/panahister/tiffin-keycloak.git
+git clone https://github.com/panahister/tiffin-apisix.git
+
+cd mpcore-tiffin-sample
+scripts/full-demo.sh up-backend
+
+cd ../mpfrontend-tiffin-reference
+pnpm install --frozen-lockfile
+pnpm dev:product
+```
+
+Open Customer at `http://localhost:4411` and Operations at `http://localhost:4412`. Press `Ctrl+C` to
+stop the editable frontend; the Docker backend and its data continue running. Stop it without deleting
+data with `scripts/full-demo.sh down` from the backend checkout.
+
+Two other supported paths use the same four sibling repositories: backend developers can keep only
+dependencies in Docker and debug all nine .NET services on the host, while evaluators can run the entire
+product with `scripts/full-demo.sh up`. [Local development](docs/LOCAL-DEVELOPMENT.md) gives the exact
+prerequisites, commands, trade-offs, health behavior, and safe stop/reset sequence for all three.
+
 ## Quick verification
 
 Prerequisites: Node.js `24.19.0` and pnpm `11.25.0`.
