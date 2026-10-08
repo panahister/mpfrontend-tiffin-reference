@@ -10,3 +10,4 @@ apps/*/runtime-assets/
 .env
 .env.*.local
 bff/certs/gateway.crt
+.runtime/
