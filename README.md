@@ -13,6 +13,7 @@ realtime delivery state, English/Arabic localization, and consumer-owned theming
 [![Status](https://img.shields.io/badge/status-reference%20POC-6267e8)](#project-status)
 
 [Architecture](docs/ARCHITECTURE.md) ·
+[Frontend conventions](docs/FRONTEND-CONVENTIONS.md) ·
 [Run locally](docs/LOCAL-DEVELOPMENT.md) ·
 [Demo accounts](docs/DEMO-GUIDE.md) ·
 [Verification](docs/CI-VERIFICATION.md) ·
@@ -115,11 +116,16 @@ git clone https://github.com/panahister/mpcore-tiffin-sample.git
 git clone https://github.com/panahister/mpfrontend-tiffin-reference.git
 git clone https://github.com/panahister/tiffin-keycloak.git
 git clone https://github.com/panahister/tiffin-apisix.git
+```
 
+### Frontend Mode
+
+```bash
 cd mpcore-tiffin-sample
 scripts/full-demo.sh up-backend
 
 cd ../mpfrontend-tiffin-reference
+node scripts/verify-core-artifacts.mjs
 pnpm install --frozen-lockfile
 pnpm dev:product
 ```
@@ -128,10 +134,39 @@ Open Customer at `http://localhost:4411` and Operations at `http://localhost:441
 stop the editable frontend; the Docker backend and its data continue running. Stop it without deleting
 data with `scripts/full-demo.sh down` from the backend checkout.
 
-Two other supported paths use the same four sibling repositories: backend developers can keep only
-dependencies in Docker and debug all nine .NET services on the host, while evaluators can run the entire
-product with `scripts/full-demo.sh up`. [Local development](docs/LOCAL-DEVELOPMENT.md) gives the exact
-prerequisites, commands, trade-offs, health behavior, and safe stop/reset sequence for all three.
+### Hybrid Mode
+
+```bash
+cd mpcore-tiffin-sample
+scripts/up.sh
+scripts/setup.sh
+scripts/run.sh all
+python3 scripts/seed-us-poc.py
+
+cd ../mpfrontend-tiffin-reference
+node scripts/verify-core-artifacts.mjs
+pnpm install --frozen-lockfile
+docker compose -f compose.local.yaml up --detach --build --wait
+```
+
+This keeps every .NET service on the host for IDE debugging while the complete frontend and dependency
+topology remains containerized.
+
+### Full Demo Mode
+
+```bash
+cd mpcore-tiffin-sample
+scripts/full-demo.sh up
+```
+
+This builds, health-checks, and seeds the entire product in Docker. The command prints the Customer and
+Operations URLs only after the stack is ready.
+
+[Local development](docs/LOCAL-DEVELOPMENT.md) gives the prerequisites, expected output, verification
+commands, daily edit loop, trade-offs, troubleshooting, and safe stop/reset sequence for all three modes.
+Use [Frontend conventions](docs/FRONTEND-CONVENTIONS.md) before a feature change to decide Customer,
+Operations, product-shared, DLS-adapter, server, generated, or foundation ownership and to follow the
+contract-to-generated-code-to-product verification path.
 
 ## Quick verification
 

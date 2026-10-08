@@ -5,6 +5,8 @@ scenario while preserving the independent-consumer boundary with MP Frontend.
 
 ## Engineering rules
 
+- Follow [Tiffin frontend conventions](docs/FRONTEND-CONVENTIONS.md) for placement, separation of concerns,
+  generated ownership, and the API-feature verification path.
 - Use Node.js `24.19.0` and pnpm `11.25.0`.
 - Keep customer and operations applications independently buildable and deployable.
 - Capture contracts only from an approved backend revision.
