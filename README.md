@@ -101,6 +101,15 @@ mutate, or publish a design file.
 The recommended frontend workflow keeps the complete seeded backend in Docker, runs the two web
 applications with Next.js hot reload, and supervises their BFFs from this checkout:
 
+- Frontend contributors get real Keycloak identities and roles, APISIX routes, nine business services,
+  US restaurants and menu media, Redis-backed sessions, and realtime/product contracts without running
+  the .NET topology locally. Customer and Operations remain editable, while both Security BFFs can be
+  debugged as host processes.
+- Backend contributors can keep the applications and BFFs containerized while debugging any of the nine
+  .NET services, so every backend change is exercised through the same browser and authorization boundary.
+- Evaluators can run the whole source-built product in Docker with one command, see both role-aware
+  applications, and exercise the seeded reference without installing Node.js, pnpm, or the .NET SDK.
+
 ```bash
 git clone https://github.com/panahister/mpcore-tiffin-sample.git
 git clone https://github.com/panahister/mpfrontend-tiffin-reference.git
